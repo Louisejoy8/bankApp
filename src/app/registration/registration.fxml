@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="mainAnchor" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: palegreen;" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.registration.RegistrationController">
+    <children>
+        <Label layoutX="90.0" layoutY="39.0" text="Open an account at our bank! Just fill out the details!">
+            <font>
+                <Font size="18.0" />
+            </font>
+        </Label>
+        <TextField fx:id="regName" layoutX="226.0" layoutY="83.0" promptText="Name" />
+        <TextField fx:id="regAge" layoutX="226.0" layoutY="130.0" promptText="Birthday(dd-mm-yyyy)" />
+        <TextField fx:id="regUserName" layoutX="225.0" layoutY="175.0" promptText="User name" />
+        <PasswordField fx:id="regPassword" layoutX="226.0" layoutY="219.0" promptText="Password" />
+        <CheckBox layoutX="225.0" layoutY="305.0" mnemonicParsing="false" text="CheckBox" />
+        <Button fx:id="registerBtn" layoutX="319.0" layoutY="322.0" mnemonicParsing="false" onAction="#validateRegistration" text="Register" />
+        <Label layoutX="222.0" layoutY="281.0" text="I accept terms and conditions" />
+        <Button fx:id="goToLogin" layoutX="198.0" layoutY="361.0" mnemonicParsing="false" onAction="#sendToLogin" text="Already have an account? Click here" />
+      <Label fx:id="errorName" layoutX="226.0" layoutY="108.0" text="Something is wrong with your name" textFill="#fc0000" />
+      <Label fx:id="errorAge" layoutX="226.0" layoutY="155.0" text="Something is wrong with your birth date" textFill="RED" />
+      <Label fx:id="errorUserName" layoutX="226.0" layoutY="200.0" text="Something is wrong with your username" textFill="RED" />
+      <Label fx:id="errorPassword" layoutX="226.0" layoutY="244.0" text="Something is wrong with your password" textFill="RED" />
+    </children>
+</AnchorPane>
