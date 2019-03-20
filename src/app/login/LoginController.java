@@ -3,6 +3,7 @@ package app.login;
 
 import app.Entities.User;
 import app.Main;
+import app.account.AccountController;
 import app.db.DB;
 import app.helpers.ControllerUtils;
 import javafx.fxml.FXML;
@@ -14,9 +15,11 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class LoginController {
     ControllerUtils controllerUtils;
+    //AccountController accountController = new AccountController();
 
     @FXML
     TextField userName;
@@ -39,12 +42,13 @@ public class LoginController {
     }
 
     @FXML
-    void onLogin() {
+    void onLogin() throws SQLException {
         user = DB.getMatchingUser(userName.getText(), password.getText());
         if (user == null) {
             errorMessage.setVisible(true);
         } else {
             errorMessage.setVisible(false);
+            //accountController.insertSalery();
             controllerUtils.switchScene("/app/home/home.fxml");
         }
     }

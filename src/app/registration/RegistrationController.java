@@ -82,35 +82,29 @@ public class RegistrationController {
     }
 
     @FXML
-    boolean validateRegistration() {
+    void validateRegistration() {
         if (validateName() && validateAge() && validateUserName() && validatePassword()) {
             System.out.println("worked!");
-            ControllerUtils.switchScene("/app/login/login.fxml");
-            return true;
+            try {
+                createUser();
+                ControllerUtils.switchScene("/app/login/login.fxml");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        return false;
     }
 
     void createUser() throws SQLException {
-        if(validateRegistration()){
-            String name = regName.getText();
-            String age = regAge.getText();
-            String userName = regUserName.getText();
-            String password = regPassword.getText();
-            String query = " insert into users (name, age, user_name, password)"
-                    + " values (?, ?, ?, ?, ?)";
+        String name = regName.getText();
+        String birthdate = regAge.getText();
+        String username = regUserName.getText();
+        String password = regPassword.getText();
+        String query = " insert into users (name, birthdate, username, password)"
+                + " values (?, ?, ?, ?)";
 
-            // create the mysql insert preparedstatement
-            PreparedStatement preparedStmt = Database.getInstance().prepareStatement(query);
-            preparedStmt.setString (1, name);
-            preparedStmt.setString (2, age);
-            preparedStmt.setString(4, userName);
-            preparedStmt.setString    (5, password);
-
-            // execute the preparedstatement
-            preparedStmt.execute();
-        }
+        DB.registerUser(name, birthdate, username, password, query);
     }
+
 
     @FXML
     void sendToLogin() {

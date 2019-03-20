@@ -2,7 +2,9 @@ package app.home;
 
 import app.Main;
 import app.account.AccountController;
+import app.helpers.ControllerUtils;
 import app.transaction.TransactionController;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -33,6 +35,9 @@ public class HomeController {
 //        Stage window = (Stage)((Node)e.getSource()).getScene().getWindow();
         Main.stage.setScene(scene);
         Main.stage.show();
+    }
+    public void goToHome(){
+        ControllerUtils.switchScene("/app/home/home.fxml");
 
     }
 }
