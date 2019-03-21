@@ -3,79 +3,61 @@ package app.account;
 
 import app.db.DB;
 import app.helpers.ControllerUtils;
+import app.helpers.UserHandler;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-public class AccountController {
-
-    AccountChooser accountChooser = new AccountChooser();
+public class AccountController implements Initializable {
+    List<Map<String, Object>> accountList = null;
+    private ObservableList<ModelTable> transactions = null;
+    List<Map<String, Object>> transactionsMap = null;
     @FXML
     ComboBox combobox;
-
     @FXML
-    VBox transactionBox;
-
+    TableView<ModelTable> transactionTable;
     @FXML
-    private void initialize() {
+    TableColumn<ModelTable, String> col_sender;
+    @FXML
+    TableColumn<ModelTable, String> col_message;
+    @FXML
+    TableColumn<ModelTable, Double> col_amount;
+    @FXML
+    TableColumn<ModelTable, String> col_receiver;
+    @FXML
+    TableColumn<ModelTable, String> col_time;
+    @FXML
+    TextField accountName;
+
+    public AccountController() throws SQLException {
+    }
+
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
         setAccountChooser();
         System.out.println("initialize account");
-//        loadMoreTransactions();
-    }
-
-    void loadMoreTransactions() {
-//        List<Transaction> transactions = DB.getTransactions(accountId);
-//        displayTransaction(/*transactions*/);
-    }
-
-    void displayTransaction(/*List<Transaction> transactions*/) {
-        // For every transaction, do the following:
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/transaction/transaction.fxml"));
-            Parent fxmlInstance = loader.load();
-            Scene scene = new Scene(fxmlInstance);
-
-//            TransactionController controller = loader.getController();
-//            controller.setTransaction(transaction);
-
-            //transactionBox.getChildren().add(scene.getRoot());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void insertSalery() throws SQLException {
-        String senderaccount = "workPlace";
-        String message = "Your salery";
-        Double amount = 10000000.5;
-        String time = new SimpleDateFormat("2019.03.20.12.12.12").format(new java.util.Date());
-        String receiveraccount = "mig";
-        String query = " INSERT into transactions (senderaccount, message, amount, time, receiveraccount)"
-                + " values (?, ?, ?, ?, ?)";
-
-        DB.addSalery(senderaccount, message, amount, time, receiveraccount, query);
-    }
-
-    public void getAccount() {
+        col_sender.setCellValueFactory(new PropertyValueFactory<>("senderaccount"));
+        col_message.setCellValueFactory(new PropertyValueFactory<>("message"));
+        col_amount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        col_time.setCellValueFactory(new PropertyValueFactory<>("time"));
+        col_receiver.setCellValueFactory(new PropertyValueFactory<>("receiveraccount"));
 
     }
 
-    @FXML
-    void clickLoadTransactions(Event e) {
-        loadMoreTransactions();
-    }
 
     public void goToHome() {
         ControllerUtils.switchScene("/app/home/home.fxml");
@@ -87,15 +69,63 @@ public class AccountController {
 
     }
 
-    public void setAccountChooser() {
+    public void goToTransfer() {
+        ControllerUtils.switchScene("/app/transaction/transaction.fxml");
+    }
 
+    public void setAccountChooser() {
+        accountList = DB.getAccountForUser();
+        List<String> items = accountList.stream().map(map -> map.get("account_name").toString()).collect(Collectors.toList());
         ObservableList<String> options =
                 FXCollections.observableArrayList(
-                        "Savings account",
-                        "Card account",
-                        "Checking account"
+                        items
                 );
         combobox.setItems(options);
     }
 
+    public void createAccount() throws SQLException {
+        Long accountnumber = (new Date()).getTime();
+        Long user_id = UserHandler.getInstance().getUser().getId();
+        Double amount = 0.0;
+        String account_name = accountName.getText();
+
+        String query = " insert into accounts (accountnumber, user_id, amount, account_name)"
+                + " values (?, ?, ?, ?)";
+
+        DB.addAccount(accountnumber, user_id, amount, account_name, query);
+        setAccountChooser();
+        accountName.clear();
+    }
+
+    public void onAccountSelected() {
+        int selectedIndex = combobox.getSelectionModel().getSelectedIndex();
+        String selecetedAccount = accountList.get(selectedIndex).get("accountnumber").toString();
+        transactionsMap = DB.getTransactions(selecetedAccount);
+        renderTransactions(10);
+    }
+
+    public void renderTransactions(int limit){
+        AtomicInteger counter = new AtomicInteger();
+        List<ModelTable> rows = new ArrayList<>();
+        transactionsMap.stream().forEach(map -> {
+            if (counter.getAndIncrement() < limit || limit < 0) {
+                ModelTable modelTable = new ModelTable(
+                        map.get("senderaccount").toString(),
+                        map.get("message").toString(),
+                        map.get("time").toString(),
+                        map.get("receiveraccount").toString(),
+                        Double.valueOf(map.get("amount").toString())
+                );
+                rows.add(modelTable);
+            }
+        });
+        transactions = FXCollections.observableArrayList(rows);
+        transactionTable.setItems(transactions);
+    }
+
+
+    public void onShowMore() {
+        renderTransactions(-1);
+    }
 }
+

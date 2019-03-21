@@ -40,4 +40,8 @@ public class HomeController {
         ControllerUtils.switchScene("/app/home/home.fxml");
 
     }
+
+    public void goToTransfer() {
+        ControllerUtils.switchScene("/app/transaction/transaction.fxml");
+    }
 }

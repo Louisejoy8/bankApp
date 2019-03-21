@@ -6,6 +6,7 @@ import app.Main;
 import app.account.AccountController;
 import app.db.DB;
 import app.helpers.ControllerUtils;
+import app.helpers.UserHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -48,6 +49,7 @@ public class LoginController {
             errorMessage.setVisible(true);
         } else {
             errorMessage.setVisible(false);
+            UserHandler.getInstance().setUser(user);
             //accountController.insertSalery();
             controllerUtils.switchScene("/app/home/home.fxml");
         }

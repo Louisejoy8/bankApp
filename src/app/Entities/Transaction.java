@@ -19,6 +19,14 @@ public class Transaction {
     @Column
     private String receiveraccount;
 
+    public Transaction (String sender, String message, float amount, String receiver, LocalDate date) {
+        receiveraccount = receiver;
+        senderaccount_id = sender;
+        this.message = message;
+        this.amount = amount;
+        this.date = date;
+    }
+
     public String getMessage() { return message; }
     public float getAmount() { return amount; }
     public LocalDate getDate() { return date; }

@@ -1,31 +1,39 @@
 package app.db;
 
+import app.Entities.Account;
+import app.Entities.Transaction;
 import app.Entities.User;
+import app.helpers.UserHandler;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
-/** A Helper class for interacting with the Database using short-commands */
+/**
+ * A Helper class for interacting with the Database using short-commands
+ */
 public abstract class DB {
 
-    public static PreparedStatement prep(String SQLQuery){
+    public static PreparedStatement prep(String SQLQuery) {
         return Database.getInstance().prepareStatement(SQLQuery);
     }
 
-    public static User getMatchingUser(String username, String password){
+    public static User getMatchingUser(String username, String password) {
         User result = null;
         PreparedStatement ps = prep("SELECT * FROM users WHERE username = ? AND password = ?");
         try {
             ps.setString(1, username);
             ps.setString(2, password);
-            result = (User)new ObjectMapper<>(User.class).mapOne(ps.executeQuery());
-        } catch (Exception e) { e.printStackTrace(); }
+            result = (User) new ObjectMapper<>(User.class).mapOne(ps.executeQuery());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return result; // return User;
     }
 
-    public static void registerUser(String name, String birthdate, String username, String password,String query ) throws SQLException {
+    public static void registerUser(String name, String birthdate, String username, String password, String query) throws SQLException {
         // create the mysql insert preparedstatement
         PreparedStatement preparedStmt = Database.getInstance().prepareStatement(query);
         preparedStmt.setString(1, name);
@@ -40,12 +48,70 @@ public abstract class DB {
     public static void addSalery(String senderaccount, String message, double amount, String time, String receiveraccount, String query) throws SQLException {
         PreparedStatement preparedStmt = Database.getInstance().prepareStatement(query);
         preparedStmt.setString(1, senderaccount);
-        preparedStmt.setString(2,message);
+        preparedStmt.setString(2, message);
         preparedStmt.setDouble(3, amount);
         preparedStmt.setString(4, time);
         preparedStmt.setString(5, receiveraccount);
 
         preparedStmt.executeUpdate();
+    }
+
+    public static void addAccount(Long accountnumber, Long user_id, Double amount, String account_name, String query) throws SQLException {
+        PreparedStatement preparedStmt = Database.getInstance().prepareStatement(query);
+        preparedStmt.setLong(1, accountnumber);
+        preparedStmt.setLong(2, user_id);
+        preparedStmt.setDouble(3, amount);
+        preparedStmt.setString(4, account_name);
+
+        preparedStmt.executeUpdate();
+    }
+
+    public static List<Map<String, Object>> getAccountForUser() {
+        Long user_id = UserHandler.getInstance().getUser().getId();
+        PreparedStatement ps = prep("SELECT * FROM accounts WHERE user_id = ?");
+        try {
+            ps.setLong(1, user_id);
+            return new ObjectMapper<>(Account.class).resultSetToArrayList(ps.executeQuery());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static List<Map<String, Object>> getTransactions(String accountNumber) {
+        PreparedStatement ps = prep("SELECT * FROM transactions WHERE senderaccount = ? OR receiveraccount = ?");
+        try {
+            ps.setString(1, accountNumber);
+            ps.setString(2, accountNumber);
+            return new ObjectMapper<>(Transaction.class).resultSetToArrayList(ps.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void getMoneyTransfer(Long senderaccount, Long receiveraccount,
+                                        String message, Double amount, Date time) {
+        PreparedStatement ps = prep("UPDATE accounts set amount = amount+? WHERE accountnumber =? ");
+        PreparedStatement ps1 = prep("UPDATE accounts set amount = amount-? WHERE accountnumber =? ");
+        PreparedStatement ps2 = prep("INSERT INTO transactions (senderaccount, message, amount, time, receiveraccount) VALUES(?, ?, ?, ?,?)");
+        try {
+            ps.setDouble(1, amount);
+            ps.setLong(2, receiveraccount);
+            ps1.setDouble(1, amount);
+            ps1.setLong(2, senderaccount);
+            ps2.setLong(1, senderaccount);
+            ps2.setString(2, message);
+            ps2.setDouble(3, amount);
+            ps2.setDate(4, time);
+            ps2.setLong(5, receiveraccount);
+
+            ps.executeUpdate();
+            ps1.executeUpdate();
+            ps2.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /*
@@ -61,6 +127,5 @@ public abstract class DB {
         return result; // return User;
     }
     */
-
 
 }

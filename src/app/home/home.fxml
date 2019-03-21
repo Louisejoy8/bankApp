@@ -60,7 +60,7 @@
                               <Insets bottom="15.0" />
                            </VBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="106.0" text="Money transfer">
+                        <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="106.0" text="Money transfer" onAction="#goToTransfer">
                            <cursor>
                               <Cursor fx:constant="HAND" />
                            </cursor>

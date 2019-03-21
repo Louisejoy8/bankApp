@@ -19,4 +19,8 @@ public class ControllerUtils {
             e1.printStackTrace();
         }
     }
+
+    public static void getAccount(){
+
+    }
 }

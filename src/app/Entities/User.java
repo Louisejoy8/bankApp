@@ -29,5 +29,7 @@ public class User {
     public String toString(){
         return String.format("User: { id: %d, name: %s, age: %d }", id, name, age);
     }
-
+    public Long getId(){
+        return id;
+    }
 }
