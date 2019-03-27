@@ -7,16 +7,17 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="400.0" maxWidth="600.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.login.LoginController">
+<AnchorPane maxHeight="400.0" maxWidth="600.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: lightblue" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.login.LoginController">
    <children>
-       <TextField fx:id="userName" layoutX="226.0" layoutY="145.0" promptText="Username " text="LouiseJoy8" />
-      <PasswordField fx:id="password" layoutX="226.0" layoutY="213.0" promptText="Password" text="hejmormor" />
-      <Label layoutX="73.0" layoutY="39.0" text="Hello, and welcome to your favourite bank! ">
+       <TextField fx:id="userName" layoutX="226.0" layoutY="159.0" promptText="Username " text="LouiseJoy8" />
+      <PasswordField fx:id="password" layoutX="226.0" layoutY="209.0" promptText="Password" text="hejmormor" />
+      <Label layoutX="77.0" layoutY="39.0" text="Hello, and welcome to your favourite bank! ">
          <font>
-            <Font size="24.0" />
+            <Font name="Copperplate Gothic Bold" size="18.0" />
          </font>
       </Label>
-      <Button layoutX="323.0" layoutY="257.0" mnemonicParsing="false" onAction="#onLogin" text="Log in" />
+      <Button layoutX="226.0" layoutY="256.0" mnemonicParsing="false" onAction="#onLogin" prefHeight="25.0" prefWidth="149.0" text="Log in" />
       <Label fx:id="errorMessage" layoutX="178.0" layoutY="88.0" text="Something went wrong, check user name or password!" textFill="RED" />
+      <Button layoutX="211.0" layoutY="312.0" mnemonicParsing="false" onAction="#goToReg" prefHeight="25.0" prefWidth="188.0" text="First time we meet? Click here" />
    </children>
 </AnchorPane>

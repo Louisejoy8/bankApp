@@ -6,25 +6,25 @@ import app.helpers.ControllerUtils;
 import app.helpers.UserHandler;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
 
-import java.net.URL;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class AccountController implements Initializable {
+public class AccountController {
     List<Map<String, Object>> accountList = null;
     private ObservableList<ModelTable> transactions = null;
     List<Map<String, Object>> transactionsMap = null;
+    ObservableList<String> types = null;
     @FXML
     ComboBox combobox;
     @FXML
@@ -41,14 +41,19 @@ public class AccountController implements Initializable {
     TableColumn<ModelTable, String> col_time;
     @FXML
     TextField accountName;
+    @FXML
+    ComboBox<String> typeOfAccount;
+    @FXML
+    Pane navbar;
+    @FXML
+    Label accountMessage;
+    private String selectedAccount;
 
-    public AccountController() throws SQLException {
-    }
-
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    @FXML
+    public void initialize() throws IOException {
+        ControllerUtils.loadFxmlFile(navbar);
         setAccountChooser();
+        selectAccountType();
         System.out.println("initialize account");
         col_sender.setCellValueFactory(new PropertyValueFactory<>("senderaccount"));
         col_message.setCellValueFactory(new PropertyValueFactory<>("message"));
@@ -58,21 +63,7 @@ public class AccountController implements Initializable {
 
     }
 
-
-    public void goToHome() {
-        ControllerUtils.switchScene("/app/home/home.fxml");
-
-    }
-
-    public void goToAccount() {
-        ControllerUtils.switchScene("/app/account/account.fxml");
-
-    }
-
-    public void goToTransfer() {
-        ControllerUtils.switchScene("/app/transaction/transaction.fxml");
-    }
-
+    //Display right accounts in comboBox
     public void setAccountChooser() {
         accountList = DB.getAccountForUser();
         List<String> items = accountList.stream().map(map -> map.get("account_name").toString()).collect(Collectors.toList());
@@ -83,38 +74,56 @@ public class AccountController implements Initializable {
         combobox.setItems(options);
     }
 
+    //Creating new account and inserting in DB
     public void createAccount() throws SQLException {
+        int selectedIndex = typeOfAccount.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            accountMessage.setText("Choose type");
+            return;
+        }
+        String typeOfAccount = types.get(selectedIndex);
         Long accountnumber = (new Date()).getTime();
         Long user_id = UserHandler.getInstance().getUser().getId();
-        Double amount = 0.0;
+        Double balance = 0.0;
         String account_name = accountName.getText();
 
-        String query = " insert into accounts (accountnumber, user_id, amount, account_name)"
-                + " values (?, ?, ?, ?)";
-
-        DB.addAccount(accountnumber, user_id, amount, account_name, query);
+        String query = " insert into accounts (accountnumber, user_id, balance, type, account_name)"
+                + " values (?, ?, ?, ?,?)";
+        if (!ControllerUtils.hasAccountType(accountList, typeOfAccount) && accountName.getText().length() > 2) {
+            accountMessage.setText("Account has been added");
+            DB.addAccount(accountnumber, user_id, balance, typeOfAccount, account_name, query);
+        } else {
+            accountMessage.setText("Duplicated account type or no name");
+        }
         setAccountChooser();
         accountName.clear();
     }
 
     public void onAccountSelected() {
         int selectedIndex = combobox.getSelectionModel().getSelectedIndex();
-        String selecetedAccount = accountList.get(selectedIndex).get("accountnumber").toString();
-        transactionsMap = DB.getTransactions(selecetedAccount);
+        selectedAccount = accountList.get(selectedIndex).get("accountnumber").toString();
+        transactionsMap = DB.getTransactions(selectedAccount);
         renderTransactions(10);
     }
 
-    public void renderTransactions(int limit){
+    //Print out transactions in tableview
+    public void renderTransactions(int limit) {
+        if (transactionsMap == null) {
+            return;
+        }
         AtomicInteger counter = new AtomicInteger();
         List<ModelTable> rows = new ArrayList<>();
-        transactionsMap.stream().forEach(map -> {
+        transactionsMap.forEach(map -> {
             if (counter.getAndIncrement() < limit || limit < 0) {
+                Double amount = Double.valueOf(map.get("amount").toString());
+                String senderAccount = map.get("senderaccount").toString();
+                Double formattedAmount = selectedAccount.equals(senderAccount) ? amount * -1 : amount;
                 ModelTable modelTable = new ModelTable(
-                        map.get("senderaccount").toString(),
+                        senderAccount,
                         map.get("message").toString(),
                         map.get("time").toString(),
                         map.get("receiveraccount").toString(),
-                        Double.valueOf(map.get("amount").toString())
+                        formattedAmount
                 );
                 rows.add(modelTable);
             }
@@ -123,9 +132,21 @@ public class AccountController implements Initializable {
         transactionTable.setItems(transactions);
     }
 
+    //Types of account a user can have
+    public void selectAccountType() {
+        types = FXCollections.observableArrayList(
+                "checking",
+                "salary",
+                "saving"
+        );
+        typeOfAccount.getItems().addAll(types);
+    }
 
+
+    //If show more is clicked show 10 first + the rest
     public void onShowMore() {
         renderTransactions(-1);
     }
+
 }
 

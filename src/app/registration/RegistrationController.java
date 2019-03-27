@@ -8,13 +8,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Label;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 import java.sql.SQLException;
 
 public class RegistrationController {
-    Connection conn;
+    @FXML
+    AnchorPane mainAnchor;
     @FXML
     TextField regName;
     @FXML
@@ -43,7 +43,7 @@ public class RegistrationController {
 
     boolean validateName() {
         errorName.setVisible(false);
-        if (regName.getText().length() >= 2) {
+        if (regName.getText().length() >= 2 && regName.getText().matches("^([a-zA-Z]{2,}\\s[a-zA-z]{1,}'?-?[a-zA-Z]{2,}\\s?([a-zA-Z]{1,})?)")) {
             return true;
         } else {
             errorName.setVisible(true);
@@ -53,7 +53,7 @@ public class RegistrationController {
 
     boolean validateAge() {
         errorAge.setVisible(false);
-        if (regAge.getText().length() >= 10) {
+        if (regAge.getText().matches("([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))")) {
             return true;
         } else {
             errorAge.setVisible(true);
@@ -94,6 +94,7 @@ public class RegistrationController {
         }
     }
 
+    //Creating user and inserting to DB
     void createUser() throws SQLException {
         String name = regName.getText();
         String birthdate = regAge.getText();

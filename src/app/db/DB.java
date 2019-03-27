@@ -7,6 +7,7 @@ import app.helpers.UserHandler;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -56,12 +57,13 @@ public abstract class DB {
         preparedStmt.executeUpdate();
     }
 
-    public static void addAccount(Long accountnumber, Long user_id, Double amount, String account_name, String query) throws SQLException {
+    public static void addAccount(Long accountnumber, Long user_id, Double balance, String type, String account_name, String query) throws SQLException {
         PreparedStatement preparedStmt = Database.getInstance().prepareStatement(query);
         preparedStmt.setLong(1, accountnumber);
         preparedStmt.setLong(2, user_id);
-        preparedStmt.setDouble(3, amount);
-        preparedStmt.setString(4, account_name);
+        preparedStmt.setDouble(3, balance);
+        preparedStmt.setString(4, type);
+        preparedStmt.setString(5, account_name);
 
         preparedStmt.executeUpdate();
     }
@@ -90,21 +92,21 @@ public abstract class DB {
         return null;
     }
 
-    public static void getMoneyTransfer(Long senderaccount, Long receiveraccount,
+    public static void getMoneyTransfer(String senderaccount, String receiveraccount,
                                         String message, Double amount, Date time) {
-        PreparedStatement ps = prep("UPDATE accounts set amount = amount+? WHERE accountnumber =? ");
-        PreparedStatement ps1 = prep("UPDATE accounts set amount = amount-? WHERE accountnumber =? ");
+        PreparedStatement ps = prep("UPDATE accounts set balance = balance+? WHERE accountnumber =? ");
+        PreparedStatement ps1 = prep("UPDATE accounts set balance = balance-? WHERE accountnumber =? ");
         PreparedStatement ps2 = prep("INSERT INTO transactions (senderaccount, message, amount, time, receiveraccount) VALUES(?, ?, ?, ?,?)");
         try {
             ps.setDouble(1, amount);
-            ps.setLong(2, receiveraccount);
+            ps.setString(2, receiveraccount);
             ps1.setDouble(1, amount);
-            ps1.setLong(2, senderaccount);
-            ps2.setLong(1, senderaccount);
+            ps1.setString(2, senderaccount);
+            ps2.setString(1, senderaccount);
             ps2.setString(2, message);
             ps2.setDouble(3, amount);
             ps2.setDate(4, time);
-            ps2.setLong(5, receiveraccount);
+            ps2.setString(5, receiveraccount);
 
             ps.executeUpdate();
             ps1.executeUpdate();
@@ -113,6 +115,42 @@ public abstract class DB {
             e.printStackTrace();
         }
     }
+
+    public static List<Map<String, Object>> getAccountAndBalance(Long userid) {
+        PreparedStatement ps = prep("SELECT account_name, balance, accountnumber, type FROM accounts WHERE user_id = ?");
+        try {
+            ps.setLong(1, userid);
+            return new ObjectMapper<>(Transaction.class).resultSetToArrayList(ps.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void changeNameInDB(String accountnumber, String newName) throws SQLException {
+        PreparedStatement ps = prep("UPDATE accounts set account_name = ? WHERE accountnumber = ?");
+        ps.setString(1, newName);
+        ps.setString(2, accountnumber);
+        ps.executeUpdate();
+    }
+
+    public static void deleteAccountFromDb(String accountnumber) throws SQLException {
+        PreparedStatement ps = prep("DELETE FROM accounts WHERE accountnumber = ?");
+        ps.setString(1, accountnumber);
+
+        ps.executeUpdate();
+    }
+
+    public static Double getBalanceFromAccount(String accountnumber) throws SQLException {
+        PreparedStatement ps = prep("SELECT balance FROM accounts WHERE accountnumber = ?");
+        ps.setString(1,accountnumber);
+        ResultSet resultSet = ps.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getDouble(1);
+        }
+        return -1.0;
+    }
+}
 
     /*
         Example method with default parameters
@@ -127,5 +165,3 @@ public abstract class DB {
         return result; // return User;
     }
     */
-
-}

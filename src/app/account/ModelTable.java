@@ -4,6 +4,8 @@ import app.annotations.Column;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+//Class made for creating objects to display in tableview
+
 public class ModelTable {
     private SimpleStringProperty senderaccount;
     private SimpleStringProperty message;
