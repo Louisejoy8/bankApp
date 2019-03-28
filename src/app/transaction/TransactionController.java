@@ -95,11 +95,11 @@ public class TransactionController {
             succesOrNot.setText("Can not send to same account");
             return;
         }
-        Double amount = Double.valueOf(amountField.getText());
-        if (amount.toString().matches("^[0-9]*$")){
+        if (!amountField.getText().matches("^[0-9]*$")){
             succesOrNot.setText("Have to be correct amount");
             return;
         }
+        Double amount = Double.valueOf(amountField.getText());
         Date time = new Date(millis);
         if (amount > DB.getBalanceFromAccount(selectedAccount)) {
             succesOrNot.setText("You do not have enough money");
